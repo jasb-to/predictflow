@@ -1,21 +1,27 @@
 import streamlit as st
 import pandas as pd
-import io
+import requests
 
-st.title("PredictFlow.ai (Mac Optimized)")
+st.title("PredictFlow.ai LIVE")
+st.write("""
+Upload equipment sensor data (CSV with timestamp + at least one of:
+temperature, vibration, pressure, current)
+""")
 
-uploaded_file = st.file_uploader("Upload equipment CSV")
+# Hugging Face API setup
+API_URL = "https://api-inference.huggingface.co/models/jbrownlee/Dummy-Predictive-Maintenance"
+headers = {"Authorization": "Bearer YOUR_HF_TOKEN"}  # ← Paste your token here
+
+def predict(data):
+    response = requests.post(API_URL, headers=headers, json={"inputs": data.to_dict()})
+    return response.json()
+
+uploaded_file = st.file_uploader("Choose CSV")
 if uploaded_file:
-    try:
-        # Handles Mac/Windows line endings
-        data = pd.read_csv(io.StringIO(uploaded_file.getvalue().decode('utf-8')))
-        st.success(f"Analyzed {len(data)} records!")
-        
-        # Mock analysis
-        if "temperature" in data.columns:
-            risk = "HIGH" if data["temperature"].mean() > 90 else "LOW"
-            st.warning(f"Predicted risk: {risk}")
-        st.write(data.head())
-        
-    except Exception as e:
-        st.error(f"Mac formatting issue? Try re-saving as UTF-8 CSV. Error: {str(e)}")
+    data = pd.read_csv(uploaded_file)
+    st.success(f"Analyzing {len(data)} records...")
+    
+    # Get AI predictions
+    predictions = predict(data.head())  # Analyze first 5 rows
+    st.warning(f"🔴 Critical alerts: {len(predictions['failures'])}")
+    st.write(predictions)
