@@ -6,20 +6,33 @@ import requests
 API_URL = "https://api-inference.huggingface.co/models/facebook/prophet"
 headers = {"Authorization": "Bearer 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"}  # ← Replace!
 
+# Local Mock Predictor (no API needed)
 def safe_predict(data):
-    try:
-        # Convert data to Prophet's expected format
-        prophet_data = data.rename(columns={'timestamp': 'ds', 'temperature': 'y'})[['ds', 'y']]
-        response = requests.post(API_URL, headers=headers, json={"inputs": prophet_data.to_dict()})
-        
-        if response.status_code == 200:
-            return {
-                "failures": [f"unit_{i}" for i in range(3)],  # Mock failures
-                "forecast": response.json()["forecast"]  # Real predictions
-            }
-        return {"error": f"API Error: {response.text}"}
-    except Exception as e:
-        return {"error": str(e)}
+    """Generates realistic mock predictions based on sensor thresholds"""
+    failures = []
+    
+    # Temperature checks (threshold: 90°C)
+    if "temperature" in data.columns:
+        hot_units = data[data["temperature"] > 90].index.tolist()
+        failures.extend([f"pump_{i+1}" for i in hot_units])
+    
+    # Vibration checks (threshold: 5.0)
+    if "vibration" in data.columns:
+        vibrating_units = data[data["vibration"] > 5.0].index.tolist()
+        failures.extend([f"motor_{i+1}" for i in vibrating_units])
+    
+    # Calculate risk score (0-1 scale)
+    risk_score = min(0.99, (
+        (0.7 if len(failures) > 0 else 0.2) + 
+        (0.3 * data.get("temperature", 85).mean() / 100)
+    )
+    
+    return {
+        "failures": failures,
+        "risk_score": round(risk_score, 2),
+        "confidence": 0.92,
+        "alert": "CRITICAL" if risk_score > 0.8 else "WATCH"
+    }
 
 # Streamlit UI
 st.title("PredictFlow.ai PRO")
