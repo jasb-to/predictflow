@@ -21,11 +21,11 @@ def safe_predict(data):
         vibrating_units = data[data["vibration"] > 5.0].index.tolist()
         failures.extend([f"motor_{i+1}" for i in vibrating_units])
     
-    # Calculate risk score (0-1 scale)
-    risk_score = min(0.99, (
+    # PROPERLY CLOSED risk score calculation
+    risk_score = min(0.99, 
         (0.7 if len(failures) > 0 else 0.2) + 
         (0.3 * data.get("temperature", 85).mean() / 100)
-    )
+    )  # ← This parenthesis closes the min() function
     
     return {
         "failures": failures,
