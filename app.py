@@ -1,22 +1,21 @@
 import streamlit as st
 import pandas as pd
+import io
 
-st.title("PredictFlow.ai")
-st.write("Upload equipment sensor data (CSV with timestamp, temperature, vibration, pressure)")
+st.title("PredictFlow.ai (Mac Optimized)")
 
-uploaded_file = st.file_uploader("Choose CSV file")
+uploaded_file = st.file_uploader("Upload equipment CSV")
 if uploaded_file:
     try:
-        data = pd.read_csv(uploaded_file)
-        st.success("File loaded successfully!")
-        st.write("First 5 rows:", data.head())
+        # Handles Mac/Windows line endings
+        data = pd.read_csv(io.StringIO(uploaded_file.getvalue().decode('utf-8')))
+        st.success(f"Analyzed {len(data)} records!")
         
-        # Simple mock analysis
+        # Mock analysis
         if "temperature" in data.columns:
             risk = "HIGH" if data["temperature"].mean() > 90 else "LOW"
-            st.warning(f"⚠️ Predicted failure risk: {risk}")
-        else:
-            st.info("ℹ️ Add 'temperature' column for better predictions")
-            
+            st.warning(f"Predicted risk: {risk}")
+        st.write(data.head())
+        
     except Exception as e:
-        st.error(f"Error: {str(e)}. Please check your CSV format.")
+        st.error(f"Mac formatting issue? Try re-saving as UTF-8 CSV. Error: {str(e)}")
