@@ -30,7 +30,7 @@ if uploaded_file:
         predictions = safe_predict(data.head())  # Test first 5 rows
         
     if "failures" in predictions:
-        st.warning(f"🔴 Critical alerts: {len(predictions['failures']}")  # Added closing )
+        st.warning(f"🔴 Critical alerts: {len(predictions['failures'])}")  # All parentheses now match
         st.json(predictions)
     elif "error" in predictions:
         st.error(predictions["error"])
