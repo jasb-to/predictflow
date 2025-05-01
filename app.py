@@ -3,14 +3,14 @@ import pandas as pd
 import requests
 
 # ======================
-# Configuration
+# Configuration (SAFE)
 # ======================
 st.set_page_config(page_title="PredictFlow.ai", layout="wide")
 st.title("🔧 PredictFlow.ai - Predictive Maintenance")
 
-# Hugging Face API setup
+# Hugging Face API setup (uses hidden secrets)
 API_URL = "https://jasb-to-predictflow-ai.hf.space/predict"
-HF_TOKEN = "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"  # Replace with your token or use st.secrets["HF_TOKEN"]
+HF_TOKEN = st.secrets["HF_TOKEN"]  # ← Now secure!
 
 # ======================
 # Prediction Functions
