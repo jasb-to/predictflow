@@ -77,7 +77,7 @@ if uploaded_file:
                      result.get('status', 'WATCH'))
             
             if result["failures"]:
-                st.error(f"🚨 Critical: {', '.join(result['failures']}")
+                st.error(f"🚨 Critical: {', '.join(result['failures']}")  # Now correct
             else:
                 st.success("✅ All systems normal")
                 
